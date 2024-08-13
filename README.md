@@ -8,15 +8,15 @@ This API allows customers to export data based on specific parameters such as `a
 
 ### URL
 
-\`\`\`plaintext
+```plaintext
 https://api.oleaedge.com/functions/v1/export
-\`\`\`
+```
 
 ### Method
 
-\`\`\`plaintext
+```plaintext
 POST
-\`\`\`
+```
 
 ## Headers
 
@@ -24,9 +24,9 @@ POST
   This token is required to authenticate the request.
   
   Example:
-  \`\`\`plaintext
+  ```plaintext
   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
-  \`\`\`
+  ```
 
 - **Content-Type**: application/json  
   This header specifies that the request body is in JSON format.
@@ -39,41 +39,41 @@ The request body must be a JSON object with the following parameters:
   The API key used for authentication.
   
   Example:
-  \`\`\`json
+  ```json
   "api_key": *(Provided By Olea)*
-  \`\`\`
+  ```
 
 - **meter_id**: *(String)*  
   The unique identifier for the meter.
   
   Example:
-  \`\`\`json
+  ```json
   "meter_id": "354bdd20-cce7-11ee-9f32-678c43cfd720"
-  \`\`\`
+  ```
 
 - **start_date**: *(String, Optional)*  
   The start date for the data export in the format `YYYY-MM-DD`. If not provided, the most recent data is returned.
   
   Example:
-  \`\`\`json
+  ```json
   "start_date": "2024-08-07"
-  \`\`\`
+  ```
 
 - **end_date**: *(String, Optional)*  
   The end date for the data export in the format `YYYY-MM-DD`. If provided, data between `start_date` and `end_date` is returned.
   
   Example:
-  \`\`\`json
+  ```json
   "end_date": "2024-08-10"
-  \`\`\`
+  ```
 
 - **page**: *(Integer, Optional)*  
   Specifies the page of data to be returned in batches of 1,000 records. If not provided, only the last value is returned if `start_date` and `end_date` are also not provided.
   
   Example:
-  \`\`\`json
+  ```json
   "page": 2
-  \`\`\`
+  ```
 
 ### Expression Value
 
@@ -83,7 +83,7 @@ For example, if the project's expression is set to `(x - y) * 0.5`, the `express
 
 ### Example Request
 
-\`\`\`bash
+```bash
 curl -L -X POST 'https://kxqhznhmriurivmvhaev.supabase.co/functions/v1/export' \
 -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
 -H 'Content-Type: application/json' \
@@ -94,7 +94,7 @@ curl -L -X POST 'https://kxqhznhmriurivmvhaev.supabase.co/functions/v1/export' \
     "end_date": "2024-08-10",
     "page": 2
 }'
-\`\`\`
+```
 
 ## Response
 
@@ -110,7 +110,7 @@ If the request is successful, the API will return a JSON object containing the d
 
 #### Example Response
 
-\`\`\`json
+```json
 {
   "ok": true,
   "data": [
@@ -129,13 +129,13 @@ If the request is successful, the API will return a JSON object containing the d
     // Additional records up to 1,000 if `page` is specified
   ]
 }
-\`\`\`
+```
 
 ### Single Value Response
 
 If no `start_date`, `end_date`, or `page` is provided, the API returns a single value, which is the last available data point:
 
-\`\`\`json
+```json
 {
   "ok": true,
   "data": [
@@ -147,7 +147,7 @@ If no `start_date`, `end_date`, or `page` is provided, the API returns a single 
     }
   ]
 }
-\`\`\`
+```
 
 ## Error Handling
 
