@@ -67,14 +67,6 @@ The request body must be a JSON object with the following parameters:
   "end_date": "2024-08-10"
   ```
 
-- **page**: *(Integer, Optional)*  
-  Specifies the page of data to be returned in batches of 1,000 records. If not provided, only the last value is returned if `start_date` and `end_date` are also not provided.
-  
-  Example:
-  ```json
-  "page": 2
-  ```
-
 ### Expression Value
 
 The `expression_value` is a calculated value based on a project-specific expression configured on the website [http://kingpin.oleaege.com](http://kingpin.oleaege.com). If this setting is configured for the project, the `expression_value` column will be included in the output. 
@@ -91,8 +83,7 @@ curl -L -X POST 'https://kxqhznhmriurivmvhaev.supabase.co/functions/v1/export' \
     "api_key": "xxxx",
     "meter_id": "354bdd20-cce7-11ee-9f32-678c43cfd720",
     "start_date": "2024-08-07",
-    "end_date": "2024-08-10",
-    "page": 2
+    "end_date": "2024-08-10"
 }'
 ```
 
@@ -133,7 +124,7 @@ If the request is successful, the API will return a JSON object containing the d
 
 ### Single Value Response
 
-If no `start_date`, `end_date`, or `page` is provided, the API returns a single value, which is the last available data point:
+If neither `start_date` or `end_date` is provided, the API returns a single value, which is the last available data point:
 
 ```json
 {
