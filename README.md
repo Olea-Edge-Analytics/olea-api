@@ -102,14 +102,12 @@ If the request is successful, the API will return a JSON object containing the d
     {
       "rtst": "2024-08-07T12:52:28.000Z",
       "head1_value": "155",
-      "head2_value": "155",
-      "expression_value": 0
+      "head2_value": "155"
     },
     {
       "rtst": "2024-08-07T12:51:28.000Z",
       "head1_value": "155",
-      "head2_value": "155",
-      "expression_value": 0
+      "head2_value": "155"
     }
     // Additional records up to 1,000
   ]
