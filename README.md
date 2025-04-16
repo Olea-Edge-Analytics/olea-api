@@ -133,8 +133,7 @@ If neither `start_date` or `end_date` is provided, the API returns a single valu
     {
       "rtst": "2024-08-07T12:52:28.000Z",
       "head1_value": "155",
-      "head2_value": "155",
-      "expression_value": 0
+      "head2_value": "155"
     }
   ]
 }
