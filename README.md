@@ -52,19 +52,43 @@ The request body must be a JSON object with the following parameters:
   ```
 
 - **start_date**: *(String, Optional)*
-  All dates are represented in UTC time. The start date for the data export in the format `YYYY-MM-DD`. If not provided, the most recent data is returned.
+  All dates are stored in UTC time in the Olea database so unless you specify a
+  start_date with a time zone, the data will be returned in UTC.
 
-  Example:
+  If start_date is not provided, the most recent data is returned.
+
+  #### Example returning data from 2024-08-07T00:00:00.000Z:
   ```json
   "start_date": "2024-08-07"
   ```
 
-- **end_date**: *(String, Optional)*
-  All dates are represented in UTC time. The end date for the data export in the format `YYYY-MM-DD`. If provided with a start_date, data between `start_date` and `end_date` is returned. If provided without a start_date, the start_date is set to 7 days prior to the end_date.
+  If you need data starting at midnight of your time zone, you will want to
+  provide a date in ISO 8601 format with the time zone offset.
 
-  Example:
+  #### Example for Central Daylight Time (CDT) which is UTC-5:
+  ```json
+  "start_date": "2025-08-07T00:00:00-05:00"
+  ```
+
+- **end_date**: *(String, Optional)*
+  All dates are stored in UTC time in the Olea database so unless you specify an
+  end_date with a time zone, the data will be returned in UTC.
+
+  If provided with a start_date, data between `start_date` and `end_date` is returned.
+
+  If provided without a start_date, the start_date is set to 7 days prior to the end_date.
+
+  Example returning data before 2024-08-10T00:00:00.000Z:
   ```json
   "end_date": "2024-08-10"
+  ```
+
+  If you need data before a specific date in your time zone, you will want to
+  provide a date in ISO 8601 format with the time zone offset.
+
+  ### Example for Central Daylight Time (CDT) which is UTC-5:
+  ```json
+  "end_date": "2025-08-10T00:00:00-05:00"
   ```
 
 ### Example Request
