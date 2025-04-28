@@ -2,7 +2,7 @@
 
 ## Overview
 
-This API allows customers to export data based on specific parameters such as `api_key`, `location_id`, `start_date`, `end_date`, and `page`. The data returned includes values related to specific timestamps (`rtst`), head values, and expression values. The API is designed to handle paginated requests and can return data in batches of 1,000 records.
+This API allows customers to export data based on specific parameters such as `api_key`, `location_id`, `start_date`, `end_date`, and `page`. The data returned includes values related to specific timestamps (`rtst`) and head values. The API is designed to handle paginated requests and can return data in batches of 1,000 records by timestamp descending order.
 
 ## Endpoint
 
@@ -55,7 +55,9 @@ The request body must be a JSON object with the following parameters:
   All dates are stored in UTC time in the Olea database so unless you specify a
   start_date with a time zone, the data will be returned in UTC.
 
-  If start_date is not provided, the most recent data is returned.
+  If start_date and end_date is not provided, the most recent record is returned.
+
+  If start_date is provided without an end_date, the end_date is set to 7 days prior to the start_date.
 
   #### Example returning data from 2024-08-07T00:00:00.000Z:
   ```json
@@ -125,13 +127,13 @@ If the request is successful, the API will return a JSON object containing the d
   "data": [
     {
       "rtst": "2024-08-07T12:52:28.000Z",
-      "head1_value": "155",
+      "head1_value": "37",
       "head2_value": "155"
     },
     {
       "rtst": "2024-08-07T12:51:28.000Z",
-      "head1_value": "155",
-      "head2_value": "155"
+      "head1_value": "35",
+      "head2_value": "154"
     }
     // Additional records up to 1,000
   ]
@@ -140,7 +142,7 @@ If the request is successful, the API will return a JSON object containing the d
 
 ### Pagination
 
-The API supports pagination using the `page` parameter. If `page` is specified, the API will return a single batch of data. If `page` is not specified, the API will return the first 1,000 records in date ascending order.
+The API supports pagination using the `page` parameter. If `page` is specified, the API will return a single batch of data. If `page` is not specified, the API will return the first 1,000 records in date descending order.
 
 To get the next batch of data, increment the `page` parameter. Continue this process until the API returns `{"ok":true,"data":[]}`.
 
