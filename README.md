@@ -2,7 +2,7 @@
 
 ## Overview
 
-This API allows customers to export data based on specific parameters such as `api_key`, `location_id`, `start_date`, `end_date`, and `page`. The data returned includes values related to specific timestamps (`rtst`) and head values. The API is designed to handle paginated requests and can return data in batches of 1,000 records by timestamp descending order.
+This API lets customers export meter data for a given meter (`location_id`) over an optional time range. Readings are returned newest-first (by `rtst`, descending). The response shape depends on the meter's device type (see [Response](#response)).
 
 ## Endpoint
 
@@ -20,88 +20,65 @@ POST
 
 ## Headers
 
-- **Authorization**: Bearer Token
-  This token is required to authenticate the request.
+- **Authorization**: `Bearer <token>`
+  Required. This is the Olea project's public **anon** key (the same value for every customer). It authorizes the request at the gateway; per-customer access is controlled by `api_key` in the body.
 
-  Example:
   ```plaintext
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4cWh6bmhtcml1cml2bXZoYWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTExMTM4NjEsImV4cCI6MjAwNjY4OTg2MX0.Z__6-D1y2CSEebkf-m-l_0vK0U5-QL22-xRLV-59LZk
   ```
 
-- **Content-Type**: application/json
-  This header specifies that the request body is in JSON format.
+- **Content-Type**: `application/json`
 
 ## Request Body
 
-The request body must be a JSON object with the following parameters:
+A JSON object with the following parameters:
 
-- **api_key**: *(String)*
-  The API key used for authentication.
+- **api_key** *(String, required)* — Your customer API key. Provided by Olea. Determines which meters you may access.
 
-  Example:
+- **location_id** *(String, required)* — The unique identifier (UUID) for the meter. Provided by Olea.
+
   ```json
-  "api_key": *(Provided By Olea)*
+  "location_id": "2a9ad530-0c3b-11f1-8934-23f3ea42ce58"
   ```
 
-- **location_id**: *(String)*
-  The unique identifier for the meter.
+- **start_date** *(String, optional)* — Dates are interpreted as UTC unless you include a timezone offset.
 
-  Example:
-  ```json
-  "location_id": "354bdd20-cce7-11ee-9f32-678c43cfd720"
-  ```
-
-- **start_date**: *(String, Optional)*
-  All dates are stored in UTC time in the Olea database so unless you specify a
-  start_date with a time zone, the data will be returned in UTC.
-
-  If start_date and end_date is not provided, the most recent record is returned.
-
-  If start_date is provided without an end_date, the end_date is set to 7 days prior to the start_date.
-
-  #### Example returning data from 2024-08-07T00:00:00.000Z:
   ```json
   "start_date": "2024-08-07"
   ```
 
-  If you need data starting at midnight of your time zone, you will want to
-  provide a date in ISO 8601 format with the time zone offset.
+  For a local-midnight boundary, pass an ISO 8601 value with offset, e.g. Central Daylight Time (UTC-5):
 
-  #### Example for Central Daylight Time (CDT) which is UTC-5:
   ```json
   "start_date": "2025-08-07T00:00:00-05:00"
   ```
 
-- **end_date**: *(String, Optional)*
-  All dates are stored in UTC time in the Olea database so unless you specify an
-  end_date with a time zone, the data will be returned in UTC.
+- **end_date** *(String, optional)* — Same UTC/offset rules as `start_date`.
 
-  If provided with a start_date, data between `start_date` and `end_date` is returned.
-
-  If provided without a start_date, the start_date is set to 7 days prior to the end_date.
-
-  Example returning data before 2024-08-10T00:00:00.000Z:
   ```json
   "end_date": "2024-08-10"
   ```
 
-  If you need data before a specific date in your time zone, you will want to
-  provide a date in ISO 8601 format with the time zone offset.
+### Date range behavior
 
-  ### Example for Central Daylight Time (CDT) which is UTC-5:
-  ```json
-  "end_date": "2025-08-10T00:00:00-05:00"
-  ```
+| start_date | end_date | Window returned |
+|------------|----------|-----------------|
+| omitted    | omitted  | the single most recent reading |
+| provided   | omitted  | `start_date` → `start_date + 7 days` |
+| omitted    | provided | `end_date − 7 days` → `end_date` |
+| provided   | provided | `start_date` → `end_date` |
+
+**Maximum window per request:** **31 days** for OMR meters (7 days for PRV). A larger range returns `400 Date range cannot be more than N days`. To pull a longer history, page through it in ≤31-day requests.
 
 ### Example Request
 
 ```bash
-curl -L -X POST 'https://kxqhznhmriurivmvhaev.supabase.co/functions/v1/export' \
--H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
+curl -L -X POST 'https://api.oleaedge.com/functions/v1/export' \
+-H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4cWh6bmhtcml1cml2bXZoYWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTExMTM4NjEsImV4cCI6MjAwNjY4OTg2MX0.Z__6-D1y2CSEebkf-m-l_0vK0U5-QL22-xRLV-59LZk' \
 -H 'Content-Type: application/json' \
 --data '{
-    "api_key": "xxxx",
-    "location_id": "354bdd20-cce7-11ee-9f32-678c43cfd720",
+    "api_key": "<provided by Olea>",
+    "location_id": "2a9ad530-0c3b-11f1-8934-23f3ea42ce58",
     "start_date": "2024-08-07",
     "end_date": "2024-08-10"
 }'
@@ -109,66 +86,50 @@ curl -L -X POST 'https://kxqhznhmriurivmvhaev.supabase.co/functions/v1/export' \
 
 ## Response
 
-### Successful Response
+On success the API returns `{ "ok": true, "data": [ ... ] }`, with `data` ordered newest-first. The fields in each element depend on the meter's device type.
 
-If the request is successful, the API will return a JSON object containing the data associated with the provided parameters. The response structure is as follows:
+### OMR meters
 
-- **ok**: *(Boolean)*
-  Indicates if the request was successful.
+Each element contains the reading timestamp, the validated meter value, and the meter's current device status:
 
-- **data**: *(Array of Objects)*
-  An array containing the data points, with each batch containing up to 1,000 records if `page` is specified.
-
-#### Example Response
+- **rtst** — reading timestamp (UTC)
+- **ocr_value_manual** — the validated meter reading
+- **device_status** — current status of the device (e.g. `"IN SERVICE"`, `"MAINTENANCE"`)
 
 ```json
 {
   "ok": true,
   "data": [
-    {
-      "rtst": "2024-08-07T12:52:28.000Z",
-      "head1_value": "37",
-      "head2_value": "155"
-    },
-    {
-      "rtst": "2024-08-07T12:51:28.000Z",
-      "head1_value": "35",
-      "head2_value": "154"
-    }
-    // Additional records up to 1,000
+    { "rtst": "2026-06-08T06:59:42.000Z", "ocr_value_manual": 334380870, "device_status": "IN SERVICE" },
+    { "rtst": "2026-06-07T06:59:32.000Z", "ocr_value_manual": 332116750, "device_status": "IN SERVICE" }
   ]
 }
 ```
 
-### Pagination
+Notes for OMR:
+- Only **validated** readings are returned. Periods with no validated reading return no rows.
+- A request returns up to **1,000** readings (the newest in the window). Use a narrower date range to retrieve older readings.
 
-The API supports pagination using the `page` parameter. If `page` is specified, the API will return a single batch of data. If `page` is not specified, the API will return the first 1,000 records in date descending order.
-
-To get the next batch of data, increment the `page` parameter. Continue this process until the API returns `{"ok":true,"data":[]}`.
-
-### Single Value Response
-
-If neither `start_date` or `end_date` is provided, the API returns a single value, which is the last available data point:
+### PRV meters
 
 ```json
 {
   "ok": true,
   "data": [
-    {
-      "rtst": "2024-08-07T12:52:28.000Z",
-      "head1_value": "155",
-      "head2_value": "155"
-    }
+    { "rtst": "2024-08-07T12:52:28.000Z", "head1_value": "37", "head2_value": "155" },
+    { "rtst": "2024-08-07T12:51:28.000Z", "head1_value": "35", "head2_value": "154" }
   ]
 }
 ```
+
+PRV responses support the optional **page** *(Integer)* parameter: pass `page` to retrieve a batch of up to 1,000 records and increment it until the response returns `{"ok":true,"data":[]}`. (`page` is ignored for OMR meters.)
 
 ## Error Handling
 
-If the request fails, the API will return an error response with an appropriate status code and message. Ensure to handle these errors gracefully in your implementation.
+The API returns an error object and an appropriate status code.
 
 ### Common Errors
 
-- **401 Unauthorized**: Invalid or missing authentication token.
-- **400 Bad Request**: Invalid request parameters.
-- **500 Internal Server Error**: An error occurred on the server.
+- **401 Unauthorized** — Missing or invalid `Authorization` bearer token.
+- **400 Bad Request** — Invalid parameters, including: `Missing api_key`, `Missing location_id`, `Invalid api_key`, `Invalid location_id` (the meter isn't accessible to your `api_key`), an invalid date format, or a date range over the allowed maximum.
+- **500 Internal Server Error** — An error occurred on the server.
